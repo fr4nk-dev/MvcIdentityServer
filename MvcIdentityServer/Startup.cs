@@ -16,17 +16,17 @@ namespace MvcIdentityServer
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            const string connectionString = @"Server=.;Database=IdentityDb;User Id=www-data;Password=www-data;";
+            //const string connectionString = @"Server=.;Database=IdentityDb;User Id=www-data;Password=www-data;";
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
 
@@ -43,7 +43,11 @@ namespace MvcIdentityServer
 
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                .AddTestUsers(Config.GetUsers())
+                .AddInMemoryPersistedGrants()
+                .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                .AddInMemoryApiResources(Config.GetApiResources())
+                .AddInMemoryClients(Config.GetClients())
+                .AddAspNetIdentity<ApplicationUser>()
                 .AddConfigurationStore(options =>
                 {
                     options.ConfigureDbContext = builder =>
